@@ -61,7 +61,7 @@ function resizeCanvas() {
     canvas.height = playableHeight;
 
     // izracun dimenzija cigli
-    brickWidth = (playableWidth - (BRICK_COLS + 1) * BRICK_PADDING) / BRICK_COLS;
+    brickWidth = (playableWidth - (BRICK_COLUMNS + 1) * BRICK_PADDING) / BRICK_COLUMNS;
     brickHeight = 20;
 }
 
@@ -79,7 +79,7 @@ function initGame() {
     bricks = [];
     for (let row = 0; row < BRICK_ROWS; row++) {
         bricks[row] = [];
-        for (let col = 0; col < BRICK_COLS; col++) {
+        for (let col = 0; col < BRICK_COLUMNS; col++) {
             bricks[row][col] = {
                 x: col * (brickWidth + BRICK_PADDING) + BRICK_PADDING,
                 y: row * (brickHeight + BRICK_PADDING) + 50,
@@ -90,7 +90,7 @@ function initGame() {
 
     score = 0;
     gameOver = false;
-    gameMessage = '';
+    gameEndMessage = '';
     draw();
 }
 
@@ -107,7 +107,7 @@ function normalizeBallSpeed() {
 // detekcija sudara loptice i cigli
 function checkBrickCollision() {
     for (let row = 0; row < BRICK_ROWS; row++) {
-        for (let col = 0; col < BRICK_COLS; col++) {
+        for (let col = 0; col < BRICK_COLUMNS; col++) {
             const brick = bricks[row][col];
             if (brick.status === 1) {
                 const brickLeft = brick.x;
@@ -131,9 +131,10 @@ function checkBrickCollision() {
                     }
                     normalizeBallSpeed();
 
-                    if (score === BRICK_ROWS * BRICK_COLS) {
+                    if (score === BRICK_ROWS * BRICK_COLUMNS) {
                         gameOver = true;
-                        gameMessage = 'YOU WIN!';
+                        gameEndMessage = 'YOU WIN!';
+                        saveBestScore();
                     }
 
                     return;
@@ -194,7 +195,13 @@ function displayScore() {
     ctx.fillText(`Best: ${bestScore}`, playableWidth - 10, 40);
 }
 
-
+// pohrana najboljeg rezultata
+function saveBestScore() {
+    if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('bestScore', bestScore);
+    }
+}
 
 // glavna funkcija za interakcije u igri
 function playGame() {
@@ -229,7 +236,8 @@ function playGame() {
         // loptica došla do dna područja igre
         if (ballY + BALL_RADIUS > playableHeight) {
             gameOver = true;
-            gameMessage = 'GAME OVER';
+            gameEndMessage = 'GAME OVER';
+            saveBestScore();
         }
 
         // provjera sudara s ciglama
@@ -255,7 +263,7 @@ function draw() {
         ctx.font = '48px Arial';
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
-        ctx.fillText(gameMessage, canvas.width / 2, canvas.height / 2);
+        ctx.fillText(gameEndMessage, canvas.width / 2, canvas.height / 2);
         ctx.font = '16px Arial';
         ctx.fillText('Press SPACE to restart', canvas.width / 2, canvas.height / 2 + 40);
         return;
